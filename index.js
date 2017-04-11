@@ -1,4 +1,4 @@
-var gitVersion={"branch":"master","rev":"122","hash":"24c9deb","hash160":"24c9deb0313c0b54c65c8186950b912eca787c39"};
+var gitVersion={"branch":"develop","rev":"123","hash":"e1f6493","hash160":"e1f649391f94f24794aa8c78d1ab1c0c6850b33e"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -164,9 +164,13 @@ var AliMNS;
         // options: optional, request options
         OpenStack.prototype.sendP = function (method, url, body, headers, options) {
             var req = { method: method, url: url };
-            if (body)
-                req.body = this._xmlBuilder.create(body).toString();
+            if (body) {
+                body.Message["@xmlns"] = "http://mns.aliyuncs.com/doc/v1/";
+                req.body = this._xmlBuilder.create(body, { encoding: 'utf-8' }).toString();
+            }
+            debug(req.body);
             req.headers = this.makeHeaders(method, url, headers, req.body);
+            debug(req);
             // combines options
             if (options) {
                 for (var opt in options) {
@@ -221,12 +225,14 @@ var AliMNS;
             var contentType = "";
             if (body) {
                 if (!headers["Content-Length"])
-                    headers["Content-Length"] = body.length;
+                    headers["Content-Length"] = body.length + 4;
                 if (!headers["Content-Type"])
                     headers["Content-Type"] = this._contentType;
                 contentType = headers["Content-Type"];
-                contentMD5 = this._account.b64md5(body);
+                // contentMD5 = this._account.b64md5(body);
+                contentMD5 = '';
                 headers["Content-MD5"] = contentMD5;
+                debug(headers);
             }
             // `Date` & `Host` will be added by request automatically
             if (!headers["x-mns-version"])
